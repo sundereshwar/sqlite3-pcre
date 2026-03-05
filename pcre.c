@@ -109,6 +109,17 @@ void regexp(sqlite3_context *ctx, int argc, sqlite3_value **argv)
     }
 }
 
+static
+void free_cache(void *ptr) {
+    cache_entry *cache = (cache_entry *) ptr;
+    for(size_t i = 0; i < CACHE_SIZE; i++) {
+        free(cache[i].s);
+        pcre2_code_free_8(cache[i].p);
+        pcre2_match_data_free_8(cache[i].m);
+    }
+    free(cache);
+}
+
 int sqlite3_pcre2_init(sqlite3 *db, char **err, const sqlite3_api_routines *api)
 {
 	SQLITE_EXTENSION_INIT2(api)
@@ -119,5 +130,5 @@ int sqlite3_pcre2_init(sqlite3 *db, char **err, const sqlite3_api_routines *api)
         }
 	    return 1;
 	}
-	return sqlite3_create_function_v2(db, "REGEXP", 2, SQLITE_UTF8, cache, regexp, NULL, NULL, free);
+	return sqlite3_create_function_v2(db, "REGEXP", 2, SQLITE_UTF8, cache, regexp, NULL, NULL, free_cache);
 }
