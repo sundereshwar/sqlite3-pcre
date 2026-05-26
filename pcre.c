@@ -73,7 +73,9 @@ void regexp(sqlite3_context *ctx, int argc, sqlite3_value **argv)
             size_t pos;
             c.p = pcre2_compile_8(re, PCRE2_ZERO_TERMINATED, 0, &err, &pos, NULL);
             if (!c.p) {
-                char *e2 = sqlite3_mprintf("%s: %s (offset %d)", re, err, pos);
+                PCRE2_UCHAR errbuf[256];
+                pcre2_get_error_message_8(err, errbuf, sizeof(errbuf));
+                char *e2 = sqlite3_mprintf("%s: %s (offset %d)", re, (char *) errbuf, (int) pos);
                 sqlite3_result_error(ctx, e2, -1);
                 sqlite3_free(e2);
                 return;
